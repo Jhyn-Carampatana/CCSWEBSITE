@@ -1,3 +1,42 @@
+<?php
+session_start();
+$conn = new mysqli("localhost", "root", "", "jhyn");
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $id_num = $_POST['id_number'];
+    $pass   = $_POST['password'];
+
+    // Search for the student by ID Number
+    $sql = "SELECT * FROM students WHERE id_number = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $id_num);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($user = $result->fetch_assoc()) {
+        // Verify the hashed password
+        if (password_verify($pass, $user['password'])) {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['name']    = $user['first_name'];
+            
+            header("Location: index.php"); // Redirect to your dashboard
+            exit();
+        } else {
+            echo "<script>alert('Invalid Password!');</script>";
+        }
+    } else {
+        echo "<script>alert('ID Number not found!');</script>";
+    }
+}
+?>
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -558,6 +597,31 @@
 
     .footer-links a:hover { color: rgba(255,255,255,0.65); }
 
+
+    .header-container {
+    display: flex;
+    align-items: center;
+    background-color: #2c446e; /* Matches your dark blue header */
+    padding: 10px 20px;
+}
+
+.system-logo {
+    width: 40px;  /* Adjust size as needed */
+    height: 40px;
+    object-fit: contain;
+    margin-right: 15px;
+    background-color: rgba(255,255,255,0.12); /* Subtle box effect like your screenshot */
+    padding: 5px;
+    border-radius: 8px;
+}
+
+.system-title {
+    color: white;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 1.2rem;
+    margin: 0;
+}
+
     /* ── RESPONSIVE ── */
     @media (max-width: 680px) {
       nav { padding: 0 1.2rem; }
@@ -583,7 +647,8 @@
   <!-- NAVBAR -->
   <nav>
     <a class="nav-brand" href="#">
-      <div class="nav-brand-icon">🎓</div>
+    <img src="ccslogo.png" alt="CCS Logo" class="system-logo">
+</div>
       <span class="nav-brand-text">CCS <span>Sit-in Monitoring System</span></span>
     </a>
     <ul class="nav-links">
@@ -622,50 +687,53 @@
       </div>
 
       <!-- Right -->
-      <div class="right-panel">
-        <div class="form-header">
-          <p class="eyebrow">Student Portal</p>
-          <h1>Sign in to<br/>your account</h1>
-          <p>Enter your credentials to continue</p>
-        </div>
+     <div class="right-panel">
+  <div class="form-header">
+    <p class="eyebrow">Student Portal</p>
+    <h1>Sign in to<br/>your account</h1>
+    <p>Enter your credentials to continue</p>
+  </div>
 
-        <div class="field">
-          <label class="field-label">ID Number</label>
-          <div class="field-input-wrap">
-            <input type="text" placeholder="Enter a valid ID number"/>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
-            </svg>
-          </div>
-        </div>
-
-        <div class="field">
-          <label class="field-label">Password</label>
-          <div class="field-input-wrap">
-            <input type="password" placeholder="Enter your password"/>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-          </div>
-        </div>
-
-        <div class="options-row">
-          <label class="remember-label">
-            <input type="checkbox"/> Remember me
-          </label>
-          <a class="forgot-link" href="#">Forgot password?</a>
-        </div>
-
-        <button class="btn-login">Sign In</button>
-
-        <div class="divider">
-          <hr/><span>or</span><hr/>
-        </div>
-
-        <p class="register-link">Don't have an account? <a href="Register.php">Register here</a></p>
+  <form method="POST" action="Login.php">
+    
+    <div class="field">
+      <label class="field-label">ID Number</label>
+      <div class="field-input-wrap">
+        <input type="text" name="id_number" placeholder="Enter your ID number" required/>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+        </svg>
       </div>
-
     </div>
+
+    <div class="field">
+      <label class="field-label">Password</label>
+      <div class="field-input-wrap">
+        <input type="password" name="password" placeholder="Enter your password" required/>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="options-row">
+      <label class="remember-label">
+        <input type="checkbox"/> Remember me
+      </label>
+      <a class="forgot-link" href="#">Forgot password?</a>
+    </div>
+
+    <button type="submit" class="btn-login">Sign In</button>
+
+  </form>
+
+  <div class="divider">
+    <hr/><span>or</span><hr/>
+  </div>
+
+  <p class="register-link">Don't have an account? <a href="Register.php">Register here</a></p>
+</div>
+
   </main>
 
   <!-- FOOTER -->
