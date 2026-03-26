@@ -1,0 +1,39 @@
+-- Students table
+CREATE TABLE students (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_number VARCHAR(50) UNIQUE NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    course VARCHAR(100),
+    year_level VARCHAR(20),
+    email VARCHAR(100),
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Admin table
+CREATE TABLE admin (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Sit-in records table
+CREATE TABLE sit_in_records (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sit_id VARCHAR(50) UNIQUE NOT NULL,
+    student_id INT NOT NULL,
+    purpose VARCHAR(255) NOT NULL,
+    lab VARCHAR(100) NOT NULL,
+    session_time VARCHAR(100) NOT NULL,
+    status ENUM('Active', 'Pending', 'Completed') DEFAULT 'Pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+-- Insert default admin (password: admin123)
+INSERT INTO admin (username, full_name, password) 
+VALUES ('admin', 'Administrator', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+-- Note: This is bcrypt hash for "password" - change to admin123 hash in production
